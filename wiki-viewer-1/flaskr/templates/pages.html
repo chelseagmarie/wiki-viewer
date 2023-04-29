@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Team Bard's Wiki Viewer{% endblock %}
+
+{% block content %}
+<!--<!DOCTYPE html>
+<html> -->
+<head>
+    <head>
+        <title>pages</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+        <style type = "text/css">
+            .fa-heart-o {
+                color: blue;
+                cursor: pointer;
+            }
+  
+            .fa-heart {
+                color: red;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+</head>
+
+
+{% if user.is_authenticated %}
+
+<body>
+    <script src = "https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var user_fav_page = 'favoritePages'+'{{ user.name }}';
+            var favoritePages = JSON.parse(localStorage.getItem(user_fav_page)) || [];
+                   
+            $(".heart").click(function() {
+                var $this = $(this);
+                var pageName = $this.data('page-name');
+                if ($this.hasClass("liked")) {
+                    $this.html('<i class="fa fa-heart-o" aria-hidden="true"></i>');
+                    $this.removeClass("liked"); 
+                    $.ajax({
+                        url: '/pages',
+                        type: 'POST',
+                        data: {page_name: pageName, edit_type: "remove"},
+                        success: function() {                         
+                            favoritePages = favoritePages.filter(function(name) { return name !== pageName; });
+                            localStorage.setItem(user_fav_page, JSON.stringify(favoritePages));
+                            location.reload();
+                        }
+                    });
+                } else {
+                    $this.html('<i class="fa fa-heart" aria-hidden="true"></i>');
+                    $this.addClass("liked");
+                    $.ajax({
+                        url: '/pages',
+                        type: 'POST',
+                        data: {page_name: pageName, edit_type: "add"},
+                        success: function() {
+                            if (!favoritePages.includes(pageName)) {
+                                favoritePages.push(pageName);
+                            }
+                            localStorage.setItem(user_fav_page, JSON.stringify(favoritePages));
+                            location.reload();
+                        }
+                    });
+                }
+            });
+
+            $(".heart").each(function() {
+                var $this = $(this);
+                var pageName = $this.data('page-name');
+                if (favoritePages.includes(pageName)) {
+                    $this.html('<i class="fa fa-heart" aria-hidden="true"></i>');
+                    $this.addClass("liked");
+                } 
+            });
+        });
+    </script>
+        <section>             
+            {% if favorites | length > 0 %}
+            <h1>Favorites List</h1>
+            <ul style = "list-style: none;">
+                {% for fav in favorites %}
+                <li>
+                <a href="/pages/{{fav[:-4]}}">{{fav[:-4]}}</a>
+                </li>
+        {% endfor%}
+        </ul>
+    {% endif %}
+        </section>
+
+        <section>
+            <h3> Pages contained in this Wiki </h3>
+                <ul style = "list-style: none;">
+                    {% for page in pages %}
+                    <li>
+                
+                        <span class= "heart" data-page-name = "{{ page.name }}"><i class="fa fa-heart-o" aria-hidden="true"></i> </span>
+                        <a href="/pages/{{page.name[:-4]}}">{{page.name[:-4]}}</a><a></a>
+                        
+                    </li>
+                    {% endfor %} 
+                </ul>
+        </section> 
+    </div>
+</body>
+
+{% else %}
+<body>
+    <div>       
+         <h3> Pages contained in this Wiki </h3>
+            <ul>
+                {% for page in pages %}
+                <li>
+                    <a href="/pages/{{page.name[:-4]}}">{{page.name[:-4]}}</a>
+                </li>
+                {% endfor %} 
+            </ul> 
+    </div>
+</body>
+{% endif %}
+{% endblock %}
